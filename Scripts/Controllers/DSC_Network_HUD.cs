@@ -1,8 +1,5 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using MLAPI;
-using UnityEngine.Events;
 
 namespace DSC.Network
 {
@@ -27,9 +24,6 @@ namespace DSC.Network
 
         [SerializeField] HUDData m_hSizeData = new HUDData { m_fHorizontalOffSet = 10, m_fVerticalOffset = 10, m_fWidth = 300, m_fHeight = 300 };
         [SerializeField] bool m_bShowGUI = true;
-
-        [Header("Event")]
-        [SerializeField] UnityEvent m_evtStart;
 
         #endregion
 
@@ -61,37 +55,13 @@ namespace DSC.Network
 
         #endregion
 
-        #region Events
-
-        public void ClickNetworkButton(NetworkMode eMode)
-        {
-            m_evtStart?.Invoke();
-
-            switch (eMode)
-            {
-                case NetworkMode.Host:
-                    NetworkManager.Singleton.StartHost();
-                    break;
-
-                case NetworkMode.Client:
-                    NetworkManager.Singleton.StartClient();
-                    break;
-
-                case NetworkMode.Server:
-                    NetworkManager.Singleton.StartServer();
-                    break;
-            }
-        }
-
-        #endregion
-
         #region Main
 
         void StartButtons()
         {
-            if (GUILayout.Button("Host")) ClickNetworkButton(NetworkMode.Host);
-            if (GUILayout.Button("Client")) ClickNetworkButton(NetworkMode.Client);
-            if (GUILayout.Button("Server")) ClickNetworkButton(NetworkMode.Server);
+            if (GUILayout.Button("Host")) StartNetwork(NetworkMode.Host);
+            if (GUILayout.Button("Client")) StartNetwork(NetworkMode.Client);
+            if (GUILayout.Button("Server")) StartNetwork(NetworkMode.Server);
         }
 
         void StatusLabels()
@@ -108,6 +78,15 @@ namespace DSC.Network
 
         #region Helper
 
+        void StartNetwork(NetworkMode eMode)
+        {
+            DSC_Network.StartNetwork(eMode);
+        }
+
+        void StopNetwork(NetworkMode eMode)
+        {
+            DSC_Network.StopNetwork(eMode);
+        }
 
 
         #endregion

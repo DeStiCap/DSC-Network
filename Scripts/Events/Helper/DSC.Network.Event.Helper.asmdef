@@ -2,6 +2,7 @@
     "name": "DSC.Network.Event.Helper",
     "rootNamespace": "DSC.Network.Event.Helper",
     "references": [
+        "GUID:acff8e849db7dec488c770445e10185e",
         "GUID:81a5879c3379e8b4eb4be2ebdee01a9f"
     ],
     "includePlatforms": [],

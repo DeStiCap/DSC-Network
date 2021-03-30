@@ -2,6 +2,8 @@
     "name": "DSC.Network",
     "rootNamespace": "DSC.Network",
     "references": [
+        "GUID:acff8e849db7dec488c770445e10185e",
+        "GUID:8e581967bbd6f2e4b9af519dce17e3f0",
         "GUID:1491147abca9d7d4bb7105af628b223e"
     ],
     "includePlatforms": [],
