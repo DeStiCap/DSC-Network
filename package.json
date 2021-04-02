@@ -2,12 +2,12 @@
     "name": "com.dsc.network",
     "author": "DeStiCap",
     "displayName": "DSC Network",
-    "version": "0.0.1-preview.1",
+    "version": "0.0.2-preview.1",
     "unity": "2020.3",
     "repository": {
         "type": "git",
         "url": "https://github.com/DeStiCap/DSC-Network.git",
-        "revision": "958f93f096dca334ef3aad60839ffa50bd916a62"
+        "revision": "https://github.com/DeStiCap/DSC-Network.git"
     },
     "description": "Network system for unity. \n\n\nNeed to install this.\n\nhttps://github.com/Unity-Technologies/com.unity.multiplayer.mlapi.git?path=/com.unity.multiplayer.mlapi#0.1.0",
     "keywords": [

@@ -1,3 +1,6 @@
+## [0.0.2-preview.1] - 2021-04-02
+- Change DSC_Event_RunEventsByNetworkEvent add/remove event in OnValidate to run only during game playing.
+
 ## [0.0.1-preview.1] - 2021-03-30
 - Add DSC_NetworkEventType enum.
 - Add DSC_Network script.

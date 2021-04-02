@@ -30,11 +30,14 @@ namespace DSC.Network.Event.Helper
 
         protected virtual void OnValidate()
         {
-            if (m_ePreviousEventType != m_eEventType)
+            if (Application.isPlaying)
             {
-                RemoveNetworkEventListener(m_ePreviousEventType);
-                AddNetworkEventListener(m_eEventType);
-                m_ePreviousEventType = m_eEventType;
+                if (m_ePreviousEventType != m_eEventType)
+                {
+                    RemoveNetworkEventListener(m_ePreviousEventType);
+                    AddNetworkEventListener(m_eEventType);
+                    m_ePreviousEventType = m_eEventType;
+                }
             }
         }
 
