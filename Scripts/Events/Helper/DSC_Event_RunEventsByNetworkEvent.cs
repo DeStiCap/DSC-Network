@@ -14,7 +14,7 @@ namespace DSC.Network.Event.Helper
 
         #endregion
 
-        protected DSC_NetworkEventType m_ePreviousEventType;
+        protected DSC_NetworkEventType? m_ePreviousEventType;
 
         protected UnityAction m_actRunEvents;
 
@@ -30,14 +30,12 @@ namespace DSC.Network.Event.Helper
 
         protected virtual void OnValidate()
         {
-            if (Application.isPlaying)
+            if (m_ePreviousEventType != null && m_ePreviousEventType != m_eEventType)
             {
-                if (m_ePreviousEventType != m_eEventType)
-                {
-                    RemoveNetworkEventListener(m_ePreviousEventType);
-                    AddNetworkEventListener(m_eEventType);
-                    m_ePreviousEventType = m_eEventType;
-                }
+                RemoveNetworkEventListener(m_ePreviousEventType.Value);
+                AddNetworkEventListener(m_eEventType);
+                m_ePreviousEventType = m_eEventType;
+
             }
         }
 
