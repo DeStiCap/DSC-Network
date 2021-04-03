@@ -7,7 +7,7 @@ using MLAPI;
 
 namespace DSC.Network
 {
-    public abstract class DSC_Network : MonoBehaviour
+    public abstract class DSC_Network : NetworkBehaviour
     {
         #region Variable
 
