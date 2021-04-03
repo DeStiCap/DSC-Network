@@ -52,8 +52,6 @@ namespace DSC.Template
             }
 
             Application.quitting += OnAppQuit;
-
-            DontDestroyOnLoad(gameObject);
         }
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]

@@ -1,4 +1,4 @@
-## [0.0.3-preview.1] - 2021-04-03
+## [0.0.3-preview.2] - 2021-04-03
 - Change DSC_Network to derived from NetworkBehaviour instead MonoBehaviour
 
 ## [0.0.2-preview.2] - 2021-04-02
