@@ -16,14 +16,9 @@ namespace DSC.Network.Event.Helper
             DSC_Network.StartNetwork(sMode);
         }
 
-        public virtual void StopNetwork(NetworkMode eMode)
+        public virtual void StopNetwork()
         {
-            DSC_Network.StopNetwork(eMode);
-        }
-
-        public virtual void StopNetwork(string sMode)
-        {
-            DSC_Network.StopNetwork(sMode);
+            DSC_Network.StopNetwork();
         }
 
         #endregion

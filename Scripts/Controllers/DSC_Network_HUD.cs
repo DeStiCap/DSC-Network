@@ -83,9 +83,9 @@ namespace DSC.Network
             DSC_Network.StartNetwork(eMode);
         }
 
-        void StopNetwork(NetworkMode eMode)
+        void StopNetwork()
         {
-            DSC_Network.StopNetwork(eMode);
+            DSC_Network.StopNetwork();
         }
 
 

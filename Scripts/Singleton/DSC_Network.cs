@@ -101,38 +101,30 @@ namespace DSC.Network
         public static void StartNetwork(string sMode)
         {
             if (TryGetNetworkModeByString(sMode, out NetworkMode eMode))
-                 StartNetwork(eMode);
+                StartNetwork(eMode);
         }
 
-        public static void StopNetwork(NetworkMode eMode)
+        public static void StopNetwork()
         {
             if (m_hBaseInstance == null)
                 return;
 
             m_hBaseInstance.networkEvent?.Run(DSC_NetworkEventType.PreStopNetwork);
 
-            switch (eMode)
+            if (NetworkManager.Singleton.IsHost)
             {
-                case NetworkMode.Host:
-                    NetworkManager.Singleton.StopHost();
-                    break;
-
-                case NetworkMode.Client:
-                    NetworkManager.Singleton.StopClient();
-                    break;
-
-                case NetworkMode.Server:
-                    NetworkManager.Singleton.StopServer();
-                    break;
+                NetworkManager.Singleton.StopHost();
+            }
+            else if (NetworkManager.Singleton.IsClient)
+            {
+                NetworkManager.Singleton.StopClient();
+            }
+            else if (NetworkManager.Singleton.IsServer)
+            {
+                NetworkManager.Singleton.StopServer();
             }
 
             m_hBaseInstance.networkEvent?.Run(DSC_NetworkEventType.PostStopNetwork);
-        }
-
-        public static void StopNetwork(string sMode)
-        {
-            if(TryGetNetworkModeByString(sMode,out NetworkMode eMode))
-                StopNetwork(eMode);
         }
 
         #endregion
