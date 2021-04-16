@@ -1,7 +1,7 @@
 using UnityEngine;
 using UnityEngine.Events;
 
-namespace DSC.Network.Event.Helper
+namespace DSC.Network.Event
 {
     public class DSC_Event_NetworkMode : MonoBehaviour
     {

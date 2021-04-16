@@ -1,3 +1,9 @@
+## [0.0.4-preview.1] - 2021-04-16
+- Add ConnectStatus enum in NetworkTemplate sample.
+- Global_NetworkManager support to set ip address, port and Transporter in StartNetwork method.
+- DSC_Network support NetworkStart and TryConnectTimeout event callback.
+- DSC_Network will stop network after start network as client but can't connect to server.
+
 ## [0.0.3-preview.3] - 2021-04-03
 - Change DSC_Network to derived from NetworkBehaviour instead MonoBehaviour
 - Change StopNetwork method in DSC_Network not receive argument anymore.

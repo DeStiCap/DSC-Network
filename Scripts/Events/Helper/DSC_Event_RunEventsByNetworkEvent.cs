@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.Events;
+using DSC.Core;
 
 namespace DSC.Network.Event.Helper
 {
@@ -9,14 +10,24 @@ namespace DSC.Network.Event.Helper
 
         #region Variable - Inspector
 
+#if UNITY_EDITOR
+        [TextArea(2, 5)]
+        [SerializeField] protected string m_eventsDescription;
+
+#endif
+
+        [Header("Run Events")]
+        [EnumMask]
+        [SerializeField] protected NetworkMode m_eNetworkMode;
         [SerializeField] protected DSC_NetworkEventType m_eEventType;
-        [SerializeField] protected UnityEvent m_evtEvent;
+        [SerializeField] protected UnityEvent m_hEvent;
 
         #endregion
 
+        protected NetworkMode? m_ePreviousNetworkMode;
         protected DSC_NetworkEventType? m_ePreviousEventType;
 
-        protected UnityAction m_actRunEvents;
+        protected UnityAction m_hRunEvents;
 
         #endregion
 
@@ -24,48 +35,50 @@ namespace DSC.Network.Event.Helper
 
         protected virtual void Awake()
         {
+            m_ePreviousNetworkMode = m_eNetworkMode;
             m_ePreviousEventType = m_eEventType;
-            m_actRunEvents = RunEvents;
+            m_hRunEvents = RunEvents;
         }
 
         protected virtual void OnValidate()
         {
-            if (m_ePreviousEventType != null && m_ePreviousEventType != m_eEventType)
+            if ((m_ePreviousNetworkMode != null && m_ePreviousNetworkMode != m_eNetworkMode)
+                || (m_ePreviousEventType != null && m_ePreviousEventType != m_eEventType))
             {
-                RemoveNetworkEventListener(m_ePreviousEventType.Value);
-                AddNetworkEventListener(m_eEventType);
+                RemoveNetworkEventListener(m_ePreviousNetworkMode.Value, m_ePreviousEventType.Value);
+                AddNetworkEventListener(m_eNetworkMode, m_eEventType);
+                m_ePreviousNetworkMode = m_eNetworkMode;
                 m_ePreviousEventType = m_eEventType;
-
             }
         }
 
         protected virtual void OnEnable()
         {
-            AddNetworkEventListener(m_eEventType);
+            AddNetworkEventListener(m_eNetworkMode, m_eEventType);
         }
 
         protected virtual void OnDisable()
         {
-            RemoveNetworkEventListener(m_eEventType);
+            RemoveNetworkEventListener(m_eNetworkMode, m_eEventType);
         }
 
         #endregion
 
         #region Events
 
-        protected void AddNetworkEventListener(DSC_NetworkEventType eEvent)
+        protected void AddNetworkEventListener(NetworkMode eMode, DSC_NetworkEventType eEvent)
         {
-            DSC_Network.AddEventListener(eEvent, m_actRunEvents);
+            DSC_Network.AddEventListener(eMode, eEvent, m_hRunEvents);
         }
 
-        protected void RemoveNetworkEventListener(DSC_NetworkEventType eEvent)
+        protected void RemoveNetworkEventListener(NetworkMode eMode, DSC_NetworkEventType eEvent)
         {
-            DSC_Network.RemoveEventListener(eEvent, m_actRunEvents);
+            DSC_Network.RemoveEventListener(eMode, eEvent, m_hRunEvents);
         }
 
         protected virtual void RunEvents()
         {
-            m_evtEvent?.Invoke();
+            m_hEvent?.Invoke();
         }
 
         #endregion

@@ -1,23 +1,67 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using DSC.Core;
 using DSC.Event;
 using UnityEngine.Events;
 using MLAPI;
 
 namespace DSC.Network
 {
-    public abstract class DSC_Network : NetworkBehaviour
+    public abstract class DSC_Network : MonoBehaviour
     {
         #region Variable
 
         #region Variable - Property
 
-        protected abstract EventCallback<DSC_NetworkEventType> networkEvent { get; set; }
+        public static bool isServerOnly
+        {
+            get
+            {
+                if (!HasBaseInstance())
+                    return false;
+
+                return m_hBaseInstance.IsServerOnly();
+            }
+        }
+
+        protected abstract EventCallback<DSC_NetworkEventType> hostEvent { get; set; }
+        protected abstract EventCallback<DSC_NetworkEventType> clientEvent { get; set; }
+        protected abstract EventCallback<DSC_NetworkEventType> serverEvent { get; set; }
+
+        protected abstract float? tryConnectTimeoutTime { get; set; }
+        protected abstract float tryConnectTimeout { get; set; }
 
         #endregion
 
         protected static DSC_Network m_hBaseInstance;
+
+        #endregion
+
+        #region Unity
+
+        protected virtual void Start()
+        {
+            var hNetManager = NetworkManager.Singleton;
+
+            // Listen to NetworkStart.
+            hNetManager.OnServerStarted += NetworkStart;
+            hNetManager.OnClientConnectedCallback += (clientId) =>
+            {
+                if (clientId == hNetManager.LocalClientId)
+                {
+                    NetworkStart();
+                }
+            };
+        }
+
+        protected virtual void Update()
+        {
+            if (tryConnectTimeoutTime.HasValue && tryConnectTimeoutTime.Value < Time.realtimeSinceStartup)
+            {
+                TryConnectTimeout();
+            }
+        }
 
         #endregion
 
@@ -30,7 +74,7 @@ namespace DSC.Network
             if (!HasBaseInstance())
                 return;
 
-            m_hBaseInstance.MainAddEventListener(eEvent, hAction);
+            m_hBaseInstance.MainAddEventListener((NetworkMode)(-1), eEvent, hAction);
         }
 
         public static void AddEventListener(DSC_NetworkEventType eEvent, UnityAction hAction, EventOrder eOrder)
@@ -38,12 +82,35 @@ namespace DSC.Network
             if (!HasBaseInstance())
                 return;
 
-            m_hBaseInstance.MainAddEventListener(eEvent, hAction, eOrder);
+            m_hBaseInstance.MainAddEventListener((NetworkMode)(-1), eEvent, hAction, eOrder);
         }
 
-        void MainAddEventListener(DSC_NetworkEventType eEvent, UnityAction hAction, EventOrder eOrder = EventOrder.Normal)
+        public static void AddEventListener(NetworkMode eMode, DSC_NetworkEventType eEvent, UnityAction hAction)
         {
-            networkEvent?.Add(eEvent, hAction, eOrder);
+            if (!HasBaseInstance())
+                return;
+
+            m_hBaseInstance.MainAddEventListener(eMode, eEvent, hAction);
+        }
+
+        public static void AddEventListener(NetworkMode eMode, DSC_NetworkEventType eEvent, UnityAction hAction, EventOrder eOrder)
+        {
+            if (!HasBaseInstance())
+                return;
+
+            m_hBaseInstance.MainAddEventListener(eMode, eEvent, hAction, eOrder);
+        }
+
+        void MainAddEventListener(NetworkMode eMode, DSC_NetworkEventType eEvent, UnityAction hAction, EventOrder eOrder = EventOrder.Normal)
+        {
+            if (FlagUtility.HasFlagUnsafe(eMode, NetworkMode.Host))
+                hostEvent?.Add(eEvent, hAction, eOrder);
+
+            if (FlagUtility.HasFlagUnsafe(eMode, NetworkMode.Client))
+                clientEvent?.Add(eEvent, hAction, eOrder);
+
+            if (FlagUtility.HasFlagUnsafe(eMode, NetworkMode.Server))
+                serverEvent?.Add(eEvent, hAction, eOrder);
         }
 
         public static void RemoveEventListener(DSC_NetworkEventType eEvent, UnityAction hAction)
@@ -51,7 +118,7 @@ namespace DSC.Network
             if (m_hBaseInstance == null)
                 return;
 
-            m_hBaseInstance.MainRemoveEventListener(eEvent, hAction);
+            m_hBaseInstance.MainRemoveEventListener((NetworkMode)(-1), eEvent, hAction);
         }
 
         public static void RemoveEventListener(DSC_NetworkEventType eEvent, UnityAction hAction, EventOrder eOrder)
@@ -59,12 +126,35 @@ namespace DSC.Network
             if (m_hBaseInstance == null)
                 return;
 
-            m_hBaseInstance.MainRemoveEventListener(eEvent, hAction, eOrder);
+            m_hBaseInstance.MainRemoveEventListener((NetworkMode)(-1), eEvent, hAction, eOrder);
         }
 
-        void MainRemoveEventListener(DSC_NetworkEventType eEvent, UnityAction hAction, EventOrder eOrder = EventOrder.Normal)
+        public static void RemoveEventListener(NetworkMode eMode, DSC_NetworkEventType eEvent, UnityAction hAction)
         {
-            networkEvent?.Remove(eEvent, hAction, eOrder);
+            if (m_hBaseInstance == null)
+                return;
+
+            m_hBaseInstance.MainRemoveEventListener(eMode, eEvent, hAction);
+        }
+
+        public static void RemoveEventListener(NetworkMode eMode, DSC_NetworkEventType eEvent, UnityAction hAction, EventOrder eOrder)
+        {
+            if (m_hBaseInstance == null)
+                return;
+
+            m_hBaseInstance.MainRemoveEventListener(eMode, eEvent, hAction, eOrder);
+        }
+
+        void MainRemoveEventListener(NetworkMode eMode, DSC_NetworkEventType eEvent, UnityAction hAction, EventOrder eOrder = EventOrder.Normal)
+        {
+            if (FlagUtility.HasFlagUnsafe(eMode, NetworkMode.Host))
+                hostEvent?.Remove(eEvent, hAction, eOrder);
+
+            if (FlagUtility.HasFlagUnsafe(eMode, NetworkMode.Client))
+                clientEvent?.Remove(eEvent, hAction, eOrder);
+
+            if (FlagUtility.HasFlagUnsafe(eMode, NetworkMode.Server))
+                serverEvent?.Remove(eEvent, hAction, eOrder);
         }
 
         #endregion
@@ -73,29 +163,37 @@ namespace DSC.Network
 
         #region Main
 
+        protected virtual void NetworkStart()
+        {
+            var hNetManager = NetworkManager.Singleton;
+
+            tryConnectTimeoutTime = null;
+
+            if (hNetManager.IsHost)
+            {
+                hostEvent?.Run(DSC_NetworkEventType.NetworkStart);
+            }
+            else if (hNetManager.IsClient)
+            {
+                RegisterClientMessageHandlers();
+                clientEvent?.Run(DSC_NetworkEventType.NetworkStart);
+            }
+            else if (hNetManager.IsServer)
+            {
+                RegisterServerMessageHandlers();
+                serverEvent?.Run(DSC_NetworkEventType.NetworkStart);
+            }
+        }
+
+        protected abstract void RegisterServerMessageHandlers();
+        protected abstract void RegisterClientMessageHandlers();
+
         public static void StartNetwork(NetworkMode eMode)
         {
             if (!HasBaseInstance())
                 return;
 
-            m_hBaseInstance.networkEvent?.Run(DSC_NetworkEventType.PreStartNetwork);
-
-            switch (eMode)
-            {
-                case NetworkMode.Host:
-                    NetworkManager.Singleton.StartHost();
-                    break;
-
-                case NetworkMode.Client:
-                    NetworkManager.Singleton.StartClient();
-                    break;
-
-                case NetworkMode.Server:
-                    NetworkManager.Singleton.StartServer();
-                    break;
-            }
-
-            m_hBaseInstance.networkEvent?.Run(DSC_NetworkEventType.PostStartNetwork);
+            m_hBaseInstance.MainStartNetwork(eMode);
         }
 
         public static void StartNetwork(string sMode)
@@ -104,27 +202,71 @@ namespace DSC.Network
                 StartNetwork(eMode);
         }
 
+        protected virtual void MainStartNetwork(NetworkMode eMode)
+        {
+            var hNetworkManager = NetworkManager.Singleton;
+
+            switch (eMode)
+            {
+                case NetworkMode.Host:
+                    hNetworkManager.StartHost();
+                    hostEvent?.Run(DSC_NetworkEventType.StartNetwork);
+                    break;
+
+                case NetworkMode.Client:
+                    tryConnectTimeoutTime = Time.realtimeSinceStartup + tryConnectTimeout;
+                    hNetworkManager.StartClient();
+                    clientEvent?.Run(DSC_NetworkEventType.StartNetwork);
+                    break;
+
+                case NetworkMode.Server:
+                    hNetworkManager.StartServer();
+                    serverEvent?.Run(DSC_NetworkEventType.StartNetwork);
+                    break;
+            }
+
+
+        }
+
         public static void StopNetwork()
         {
             if (m_hBaseInstance == null)
                 return;
 
-            m_hBaseInstance.networkEvent?.Run(DSC_NetworkEventType.PreStopNetwork);
+            m_hBaseInstance.MainStopNetwork();
+        }
 
-            if (NetworkManager.Singleton.IsHost)
+        protected virtual void MainStopNetwork()
+        {
+            var hNetworkManager = NetworkManager.Singleton;
+
+            tryConnectTimeoutTime = null;
+
+            if (hNetworkManager.IsHost)
             {
-                NetworkManager.Singleton.StopHost();
+                hNetworkManager.StopHost();
+                hostEvent?.Run(DSC_NetworkEventType.StopNetwork);
             }
-            else if (NetworkManager.Singleton.IsClient)
+            else if (hNetworkManager.IsClient)
             {
-                NetworkManager.Singleton.StopClient();
+                hNetworkManager.StopClient();
+                clientEvent?.Run(DSC_NetworkEventType.StopNetwork);
             }
-            else if (NetworkManager.Singleton.IsServer)
+            else if (hNetworkManager.IsServer)
             {
-                NetworkManager.Singleton.StopServer();
+                hNetworkManager.StopServer();
+                serverEvent?.Run(DSC_NetworkEventType.StopNetwork);
             }
 
-            m_hBaseInstance.networkEvent?.Run(DSC_NetworkEventType.PostStopNetwork);
+
+        }
+
+        protected abstract bool IsServerOnly();
+
+        protected virtual void TryConnectTimeout()
+        {
+            tryConnectTimeoutTime = null;
+            clientEvent?.Run(DSC_NetworkEventType.TryConnectTimeout);
         }
 
         #endregion
@@ -143,7 +285,7 @@ namespace DSC.Network
             return bResult;
         }
 
-        static bool TryGetNetworkModeByString(string sValue, out NetworkMode eOutMode)
+        protected static bool TryGetNetworkModeByString(string sValue, out NetworkMode eOutMode)
         {
             bool bResult = true;
             eOutMode = NetworkMode.Host;
