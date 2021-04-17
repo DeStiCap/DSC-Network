@@ -1,3 +1,7 @@
+## [0.0.5-preview.1] - 2021-04-17
+- Add DSC_EventCondition_IsServerOnly script.
+- DSC_Event_RunEventsByNetworkEvent now support EventCondition.
+
 ## [0.0.4-preview.1] - 2021-04-16
 - Add ConnectStatus enum in NetworkTemplate sample.
 - Global_NetworkManager support to set ip address, port and Transporter in StartNetwork method.

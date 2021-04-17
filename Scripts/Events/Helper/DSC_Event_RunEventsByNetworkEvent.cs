@@ -1,6 +1,7 @@
 using UnityEngine;
 using UnityEngine.Events;
 using DSC.Core;
+using DSC.Event;
 
 namespace DSC.Network.Event.Helper
 {
@@ -12,14 +13,18 @@ namespace DSC.Network.Event.Helper
 
 #if UNITY_EDITOR
         [TextArea(2, 5)]
-        [SerializeField] protected string m_eventsDescription;
+        [SerializeField] protected string m_eventDescription;
 
 #endif
 
-        [Header("Run Events")]
+        [Header("Condition")]
         [EnumMask]
         [SerializeField] protected NetworkMode m_eNetworkMode;
         [SerializeField] protected DSC_NetworkEventType m_eEventType;
+        [SerializeField] protected EventCondition[] m_arrCondition;
+
+
+        [Header("Events")]
         [SerializeField] protected UnityEvent m_hEvent;
 
         #endregion
@@ -29,12 +34,16 @@ namespace DSC.Network.Event.Helper
 
         protected UnityAction m_hRunEvents;
 
+        protected EventConditionData m_hConditionData;
+
         #endregion
 
         #region Mono
 
         protected virtual void Awake()
         {
+            m_hConditionData = new EventConditionData(transform);
+
             m_ePreviousNetworkMode = m_eNetworkMode;
             m_ePreviousEventType = m_eEventType;
             m_hRunEvents = RunEvents;
@@ -78,7 +87,19 @@ namespace DSC.Network.Event.Helper
 
         protected virtual void RunEvents()
         {
+            if (!IsPassCondition())
+                return;
+                
             m_hEvent?.Invoke();
+        }
+
+        #endregion
+
+        #region Helper
+
+        protected bool IsPassCondition()
+        {
+            return m_arrCondition.PassAllCondition(m_hConditionData);
         }
 
         #endregion
