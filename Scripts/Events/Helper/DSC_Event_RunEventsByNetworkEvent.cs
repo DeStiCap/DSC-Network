@@ -12,8 +12,8 @@ namespace DSC.Network.Event.Helper
         #region Variable - Inspector
 
 #if UNITY_EDITOR
-        [TextArea(2, 5)]
-        [SerializeField] protected string m_eventDescription;
+        [TextField("Events Description", 3)]
+        [SerializeField] protected string m_sEventsDescription;
 
 #endif
 
@@ -89,7 +89,7 @@ namespace DSC.Network.Event.Helper
         {
             if (!IsPassCondition())
                 return;
-                
+
             m_hEvent?.Invoke();
         }
 

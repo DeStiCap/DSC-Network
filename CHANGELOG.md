@@ -1,3 +1,6 @@
+## [0.0.6-preview.1] - 2021-04-18
+- DSC_Event_RunEventsByNetworkEvent now have events description text field.
+
 ## [0.0.5-preview.1] - 2021-04-17
 - Add DSC_EventCondition_IsServerOnly script.
 - DSC_Event_RunEventsByNetworkEvent now support EventCondition.
