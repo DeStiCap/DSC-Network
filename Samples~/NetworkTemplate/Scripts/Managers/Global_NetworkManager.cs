@@ -148,47 +148,12 @@ namespace DSC.Template
 
         #region Main - Network Start
 
-        public static void StartNetwork(NetworkMode eMode
-            , string sIPAddress, int nPort)
+        protected override bool IsServerOnly()
         {
-            if (instance == null)
-                return;
-
-            m_hInstance.MainStartNetwork(eMode, sIPAddress, nPort);
+            return m_bIsServerOnly;
         }
 
-        public static void StartNetwork(NetworkMode eMode
-            , string sIPAddress, int nPort, NetworkTransport hTransport)
-        {
-            if (instance == null)
-                return;
-
-            m_hInstance.MainStartNetwork(eMode, sIPAddress, nPort, hTransport);
-        }
-
-        public static void StartNetwork(string sMode
-            , string sIPAddress, int nPort)
-        {
-            if (instance == null
-            || !TryGetNetworkModeByString(sMode, out NetworkMode eMode))
-                return;
-
-            m_hInstance.MainStartNetwork(eMode, sIPAddress, nPort);
-        }
-
-        public static void StartNetwork(string sMode
-            , string sIPAddress, int nPort, NetworkTransport hTransport)
-        {
-            if (instance == null
-            || !TryGetNetworkModeByString(sMode, out NetworkMode eMode))
-                return;
-
-            m_hInstance.MainStartNetwork(eMode, sIPAddress, nPort, hTransport);
-        }
-
-        void MainStartNetwork(NetworkMode eMode
-            , string sIPAddress, int nPort
-            , NetworkTransport hTransport = null)
+        protected override void SetTransportData(string sIpAddress, int nPort = -1, NetworkTransport hTransport = null)
         {
             var hNetworkManager = NetworkManager.Singleton;
 
@@ -200,21 +165,14 @@ namespace DSC.Template
             switch (hTransport)
             {
                 case MLAPI.Transports.UNET.UNetTransport hUnetTransport:
-                    if (!string.IsNullOrEmpty(sIPAddress))
-                        hUnetTransport.ConnectAddress = sIPAddress;
+                    if (!string.IsNullOrEmpty(sIpAddress))
+                        hUnetTransport.ConnectAddress = sIpAddress;
                     if (nPort > 0)
                         hUnetTransport.ServerListenPort = nPort;
                     break;
                 default:
                     throw new System.Exception($"unhandled IpHost transport {hTransport.GetType()}");
             }
-
-            MainStartNetwork(eMode);
-        }
-
-        protected override bool IsServerOnly()
-        {
-            return m_bIsServerOnly;
         }
 
         #endregion

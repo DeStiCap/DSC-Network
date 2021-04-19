@@ -5,6 +5,7 @@ using DSC.Core;
 using DSC.Event;
 using UnityEngine.Events;
 using MLAPI;
+using MLAPI.Transports;
 
 namespace DSC.Network
 {
@@ -202,9 +203,51 @@ namespace DSC.Network
                 StartNetwork(eMode);
         }
 
-        protected virtual void MainStartNetwork(NetworkMode eMode)
+        public static void StartNetwork(NetworkMode eMode
+            , string sIPAddress, int nPort)
+        {
+            if (!HasBaseInstance())
+                return;
+
+            m_hBaseInstance.MainStartNetwork(eMode, sIPAddress, nPort);
+        }
+
+        public static void StartNetwork(NetworkMode eMode
+            , string sIPAddress, int nPort, NetworkTransport hTransport)
+        {
+            if (!HasBaseInstance())
+                return;
+
+            m_hBaseInstance.MainStartNetwork(eMode, sIPAddress, nPort, hTransport);
+        }
+
+        public static void StartNetwork(string sMode
+            , string sIPAddress, int nPort)
+        {
+            if (!HasBaseInstance()
+            || !TryGetNetworkModeByString(sMode, out NetworkMode eMode))
+                return;
+
+            m_hBaseInstance.MainStartNetwork(eMode, sIPAddress, nPort);
+        }
+
+        public static void StartNetwork(string sMode
+            , string sIPAddress, int nPort, NetworkTransport hTransport)
+        {
+            if (!HasBaseInstance()
+            || !TryGetNetworkModeByString(sMode, out NetworkMode eMode))
+                return;
+
+            m_hBaseInstance.MainStartNetwork(eMode, sIPAddress, nPort, hTransport);
+        }
+
+        protected virtual void MainStartNetwork(NetworkMode eMode
+            , string sIPAddress = null, int nPort = -1
+            , NetworkTransport hTransport = null)
         {
             var hNetworkManager = NetworkManager.Singleton;
+
+            SetTransportData(sIPAddress, nPort, hTransport);
 
             switch (eMode)
             {
@@ -257,8 +300,6 @@ namespace DSC.Network
                 hNetworkManager.StopServer();
                 serverEvent?.Run(DSC_NetworkEventType.StopNetwork);
             }
-
-
         }
 
         protected abstract bool IsServerOnly();
@@ -268,6 +309,8 @@ namespace DSC.Network
             tryConnectTimeoutTime = null;
             clientEvent?.Run(DSC_NetworkEventType.TryConnectTimeout);
         }
+
+        protected abstract void SetTransportData(string sIpAddress, int nPort = -1, NetworkTransport hTransport = null);
 
         #endregion
 

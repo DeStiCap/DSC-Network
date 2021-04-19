@@ -1,3 +1,8 @@
+## [0.0.7-preview.1] - 2021-04-19
+- Move StartNetwork ipaddress,port and transporter method in Global_NetworkManager to DSC_Network.
+- Move all method in Event_NetworkManager to DSC_Event_Network.
+- Remove Event_NetworkManager in NetworkTemplate Sample.
+
 ## [0.0.6-preview.1] - 2021-04-18
 - DSC_Event_RunEventsByNetworkEvent now have events description text field.
 
