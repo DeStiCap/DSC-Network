@@ -1,3 +1,7 @@
+## [0.0.8-preview.1] - 2021-04-21
+- Change DSC_NetworkEventType to flag type.
+- DSC_Network event callback now support use flag as event type.
+
 ## [0.0.7-preview.1] - 2021-04-19
 - Move StartNetwork ipaddress,port and transporter method in Global_NetworkManager to DSC_Network.
 - Move all method in Event_NetworkManager to DSC_Event_Network.

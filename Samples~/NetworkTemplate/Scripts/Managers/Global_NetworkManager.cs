@@ -19,8 +19,6 @@ namespace DSC.Template
         #region Variable - Inspector
 
         [SerializeField] bool m_bIsServerOnly;
-        [Min(0)]
-        [SerializeField] float m_fTryConnectTimeout = 10;
 
         #endregion
 
@@ -37,12 +35,9 @@ namespace DSC.Template
             }
         }
 
-        protected override EventCallback<DSC_NetworkEventType> hostEvent { get { return m_hHostEvent; } set { m_hHostEvent = value; } }
-        protected override EventCallback<DSC_NetworkEventType> clientEvent { get { return m_hClientEvent; } set { m_hClientEvent = value; } }
-        protected override EventCallback<DSC_NetworkEventType> serverEvent { get { return m_hServerEvent; } set { m_hServerEvent = value; } }
-
-        protected override float? tryConnectTimeoutTime { get { return m_fTryConnectTimeoutTime; } set { m_fTryConnectTimeoutTime = value; } }
-        protected override float tryConnectTimeout { get { return m_fTryConnectTimeout; } set { m_fTryConnectTimeout = value; } }
+        protected override EventFlagCallback<DSC_NetworkEventType> hostEvent { get { return m_hHostEvent; } set { m_hHostEvent = value; } }
+        protected override EventFlagCallback<DSC_NetworkEventType> clientEvent { get { return m_hClientEvent; } set { m_hClientEvent = value; } }
+        protected override EventFlagCallback<DSC_NetworkEventType> serverEvent { get { return m_hServerEvent; } set { m_hServerEvent = value; } }
 
         public static event System.Action<ConnectStatus> connectFinishCallback
         {
@@ -70,14 +65,12 @@ namespace DSC.Template
         static bool m_bAppStart;
         static bool m_bAppQuit;
 
-        EventCallback<DSC_NetworkEventType> m_hHostEvent = new EventCallback<DSC_NetworkEventType>();
-        EventCallback<DSC_NetworkEventType> m_hClientEvent = new EventCallback<DSC_NetworkEventType>();
-        EventCallback<DSC_NetworkEventType> m_hServerEvent = new EventCallback<DSC_NetworkEventType>();
+        EventFlagCallback<DSC_NetworkEventType> m_hHostEvent = new EventFlagCallback<DSC_NetworkEventType>();
+        EventFlagCallback<DSC_NetworkEventType> m_hClientEvent = new EventFlagCallback<DSC_NetworkEventType>();
+        EventFlagCallback<DSC_NetworkEventType> m_hServerEvent = new EventFlagCallback<DSC_NetworkEventType>();
 
 
         System.Action<ConnectStatus> m_hConnectFinishCallback;
-
-        float? m_fTryConnectTimeoutTime;
 
         #endregion
 

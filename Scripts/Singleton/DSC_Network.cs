@@ -6,6 +6,7 @@ using DSC.Event;
 using UnityEngine.Events;
 using MLAPI;
 using MLAPI.Transports;
+using System;
 
 namespace DSC.Network
 {
@@ -26,16 +27,26 @@ namespace DSC.Network
             }
         }
 
-        protected abstract EventCallback<DSC_NetworkEventType> hostEvent { get; set; }
-        protected abstract EventCallback<DSC_NetworkEventType> clientEvent { get; set; }
-        protected abstract EventCallback<DSC_NetworkEventType> serverEvent { get; set; }
+        public static bool isConnecting
+        {
+            get
+            {
+                if (!HasBaseInstance())
+                    return false;
 
-        protected abstract float? tryConnectTimeoutTime { get; set; }
-        protected abstract float tryConnectTimeout { get; set; }
+                return m_hBaseInstance.m_bIsConnecting;
+            }
+        }
+
+        protected abstract EventFlagCallback<DSC_NetworkEventType> hostEvent { get; set; }
+        protected abstract EventFlagCallback<DSC_NetworkEventType> clientEvent { get; set; }
+        protected abstract EventFlagCallback<DSC_NetworkEventType> serverEvent { get; set; }
 
         #endregion
 
         protected static DSC_Network m_hBaseInstance;
+
+        protected bool m_bIsConnecting;
 
         #endregion
 
@@ -54,17 +65,13 @@ namespace DSC.Network
                     NetworkStart();
                 }
             };
-        }
 
-        protected virtual void Update()
-        {
-            if (tryConnectTimeoutTime.HasValue && tryConnectTimeoutTime.Value < Time.realtimeSinceStartup)
-            {
-                TryConnectTimeout();
-            }
+            hNetManager.OnClientDisconnectCallback += OnDisconnectOrTimeout;
         }
 
         #endregion
+
+        #region Main
 
         #region Events
 
@@ -162,13 +169,12 @@ namespace DSC.Network
 
         #endregion
 
-        #region Main
 
         protected virtual void NetworkStart()
         {
             var hNetManager = NetworkManager.Singleton;
 
-            tryConnectTimeoutTime = null;
+            m_bIsConnecting = true;
 
             if (hNetManager.IsHost)
             {
@@ -183,6 +189,24 @@ namespace DSC.Network
             {
                 RegisterServerMessageHandlers();
                 serverEvent?.Run(DSC_NetworkEventType.NetworkStart);
+            }
+        }
+
+        protected virtual void OnDisconnectOrTimeout(ulong ulClientID)
+        {
+            var hNetworkManager = NetworkManager.Singleton;
+
+            if (!hNetworkManager.IsListening)
+            {
+                if (m_bIsConnecting)
+                {
+
+                    m_bIsConnecting = false;
+                }
+                else
+                {
+                    m_hBaseInstance.clientEvent.Run(DSC_NetworkEventType.StartConnectTimeout);
+                }
             }
         }
 
@@ -257,7 +281,6 @@ namespace DSC.Network
                     break;
 
                 case NetworkMode.Client:
-                    tryConnectTimeoutTime = Time.realtimeSinceStartup + tryConnectTimeout;
                     hNetworkManager.StartClient();
                     clientEvent?.Run(DSC_NetworkEventType.StartNetwork);
                     break;
@@ -267,8 +290,6 @@ namespace DSC.Network
                     serverEvent?.Run(DSC_NetworkEventType.StartNetwork);
                     break;
             }
-
-
         }
 
         public static void StopNetwork()
@@ -283,7 +304,7 @@ namespace DSC.Network
         {
             var hNetworkManager = NetworkManager.Singleton;
 
-            tryConnectTimeoutTime = null;
+            m_bIsConnecting = false;
 
             if (hNetworkManager.IsHost)
             {
@@ -303,12 +324,6 @@ namespace DSC.Network
         }
 
         protected abstract bool IsServerOnly();
-
-        protected virtual void TryConnectTimeout()
-        {
-            tryConnectTimeoutTime = null;
-            clientEvent?.Run(DSC_NetworkEventType.TryConnectTimeout);
-        }
 
         protected abstract void SetTransportData(string sIpAddress, int nPort = -1, NetworkTransport hTransport = null);
 

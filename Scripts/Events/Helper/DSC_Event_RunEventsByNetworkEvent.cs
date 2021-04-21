@@ -20,6 +20,7 @@ namespace DSC.Network.Event.Helper
         [Header("Condition")]
         [EnumMask]
         [SerializeField] protected NetworkMode m_eNetworkMode;
+        [EnumMask]
         [SerializeField] protected DSC_NetworkEventType m_eEventType;
         [SerializeField] protected EventCondition[] m_arrCondition;
 
